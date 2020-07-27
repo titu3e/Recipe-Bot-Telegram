@@ -1,29 +1,29 @@
+import config
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from bs4 import BeautifulSoup
 import logging
 import json
 import requests
 
-# Secret Keys
-api_key = '95f55c93efc94e37af288be74236e55f'
-telegram_token = '1375488285:AAFkFZ73M2pJUhbv0DRExg0I1Gk27ncaXaw'
-
-updater = Updater(token=telegram_token, use_context=True)
+# Initialize the Updater to listen for commands/messages received
+updater = Updater(token=config.telegram_token, use_context=True)
 dispatcher = updater.dispatcher
 
+# Log any exceptions or errors with timestamp
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 
+# Function to parse html returned from api request
 def parse_html(html):
     soup = BeautifulSoup(html, 'html.parser')
     text = soup.get_text()
     text = text.replace('. ', '.\n')
     text = text.replace('.', '.\n')
-    print(text)
     return text
 
 
+# Extract data from api request's response
 def create_output(response):
     recipe_title = response['recipes'][0]['title']
     recipe_time = response['recipes'][0]['readyInMinutes']
@@ -39,19 +39,22 @@ def create_output(response):
     return [message, photo]
 
 
+# Function for start command
 def start(update, context):
     context.bot.send_photo(chat_id=update.effective_chat.id,
-                           photo="https://media.gettyimages.com/photos/young-man-at"
-                                 "-sunset-picture-id496261146?s=2048x2048",
-                           caption="I'm a *bot*, please talk to me\!", parse_mode="MarkdownV2")
+                           photo="https://i.pinimg.com/236x/78/a1/97/78a19719c209a8e4cad29e6f7ee1e2a5--minimal.jpg",
+                           caption="I'm a *bot*, please talk to me\!\n*Commands:*\n1\.random \- Gives you a random "
+                                   "recipe\n2\.veg \- Gives you random veg recipe\n3\.nonveg \- Gives you random "
+                                   "non\-veg recipe", parse_mode="MarkdownV2")
 
 
+# Create handler for start command
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
 
 def get_random_recipe():
-    response = requests.get(f"https://api.spoonacular.com/recipes/random?apiKey={api_key}").text
+    response = requests.get(f"https://api.spoonacular.com/recipes/random?apiKey={config.api_key}").text
     response = json.loads(response)
     recipe_info = create_output(response)
     return recipe_info
@@ -59,10 +62,28 @@ def get_random_recipe():
 
 def get_veg_recipe():
     response = requests.get(
-        f"https://api.spoonacular.com/recipes/random?number=1&tags=vegetarian&apiKey={api_key}").text
+        f"https://api.spoonacular.com/recipes/random?number=1&tags=vegetarian&apiKey={config.api_key}").text
     response = json.loads(response)
     recipe_info = create_output(response)
     return recipe_info
+
+
+def get_nonveg_recipe():
+    response = requests.get(
+        f"https://api.spoonacular.com/recipes/random?number=1&tags=primal&apiKey={config.api_key}").text
+    response = json.loads(response)
+    recipe_info = create_output(response)
+    return recipe_info
+
+
+def nonveg(update, context):
+    recipe = get_nonveg_recipe()
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=recipe[1])
+    context.bot.send_message(chat_id=update.effective_chat.id, text=recipe[0], parse_mode='HTML')
+
+
+nonveg_handler = CommandHandler('nonveg', nonveg)
+dispatcher.add_handler(nonveg_handler)
 
 
 def veg(update, context):
