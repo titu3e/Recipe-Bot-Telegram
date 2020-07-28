@@ -1,3 +1,11 @@
+"""
+Simple bot that replies to telegram commands with yummy recipes!
+Deployed using Heroku
+
+Author: tanmayc07
+"""
+
+import os
 import config
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from bs4 import BeautifulSoup
@@ -5,9 +13,7 @@ import logging
 import json
 import requests
 
-# Initialize the Updater to listen for commands/messages received
-updater = Updater(token=config.telegram_token, use_context=True)
-dispatcher = updater.dispatcher
+PORT = int(os.environ.get('PORT', 5000))
 
 # Log any exceptions or errors with timestamp
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -23,7 +29,7 @@ def parse_html(html):
     return text
 
 
-# Extract data from api request's response
+# Function to extract data from api request's response
 def create_output(response):
     recipe_title = response['recipes'][0]['title']
     recipe_time = response['recipes'][0]['readyInMinutes']
@@ -39,20 +45,7 @@ def create_output(response):
     return [message, photo]
 
 
-# Function for start command
-def start(update, context):
-    context.bot.send_photo(chat_id=update.effective_chat.id,
-                           photo="https://i.pinimg.com/236x/78/a1/97/78a19719c209a8e4cad29e6f7ee1e2a5--minimal.jpg",
-                           caption="*Do you want a recipe today\?*\n*Commands:*\n1\.random \- Gives you a random "
-                                   "recipe\n2\.veg \- Gives you random veg recipe\n3\.nonveg \- Gives you random "
-                                   "non\-veg recipe", parse_mode="MarkdownV2")
-
-
-# Create handler for start command
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
-
-
+# Function to fetch random recipe from api
 def get_random_recipe():
     response = requests.get(f"https://api.spoonacular.com/recipes/random?apiKey={config.api_key}").text
     response = json.loads(response)
@@ -60,6 +53,7 @@ def get_random_recipe():
     return recipe_info
 
 
+# Function to fetch random veg recipe from api
 def get_veg_recipe():
     response = requests.get(
         f"https://api.spoonacular.com/recipes/random?number=1&tags=vegetarian&apiKey={config.api_key}").text
@@ -68,6 +62,7 @@ def get_veg_recipe():
     return recipe_info
 
 
+# Function to fetch random non-veg recipe from api
 def get_nonveg_recipe():
     response = requests.get(
         f"https://api.spoonacular.com/recipes/random?number=1&tags=primal&apiKey={config.api_key}").text
@@ -76,53 +71,79 @@ def get_nonveg_recipe():
     return recipe_info
 
 
+# Function for start command
+def start(update, context):
+    context.bot.send_photo(chat_id=update.effective_chat.id,
+                           photo="https://i.pinimg.com/236x/78/a1/97/78a19719c209a8e4cad29e6f7ee1e2a5--minimal.jpg",
+                           caption="*Do you want a yummy recipe today\?*\n*Commands:*\n1\.random \- Gives you a random "
+                                   "recipe\n2\.veg \- Gives you random veg recipe\n3\.nonveg \- Gives you random "
+                                   "non\-veg recipe", parse_mode="MarkdownV2")
+
+
 def nonveg(update, context):
+    """Send a non-veg recipe as message when the command /nonveg is issued."""
     recipe = get_nonveg_recipe()
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=recipe[1])
     context.bot.send_message(chat_id=update.effective_chat.id, text=recipe[0], parse_mode='HTML')
 
 
-nonveg_handler = CommandHandler('nonveg', nonveg)
-dispatcher.add_handler(nonveg_handler)
-
-
 def veg(update, context):
+    """Send a veg recipe as message when the command /veg is issued."""
     recipe = get_veg_recipe()
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=recipe[1])
     context.bot.send_message(chat_id=update.effective_chat.id, text=recipe[0], parse_mode='HTML')
 
 
-veg_handler = CommandHandler('veg', veg)
-dispatcher.add_handler(veg_handler)
-
-
 def random(update, context):
+    """Send a random recipe as message when the command /veg is issued."""
     recipe = get_random_recipe()
     context.bot.send_photo(chat_id=update.effective_chat.id, photo=recipe[1])
     context.bot.send_message(chat_id=update.effective_chat.id, text=recipe[0], parse_mode='HTML')
 
 
-random_handler = CommandHandler('random', random)
-dispatcher.add_handler(random_handler)
-
-
 def echo(update, context):
+    """Echo the user message."""
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 
-echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
-dispatcher.add_handler(echo_handler)
-
-
 def unknown(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
+    """Send a reply if unknown command is issued."""
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I can only send you yummy recipes.")
 
 
-unknown_handler = MessageHandler(Filters.command, unknown)
-dispatcher.add_handler(unknown_handler)
+def main():
+    """Start the bot"""
+    # Initialize the Updater to listen for commands/messages received
+    updater = Updater(token=config.telegram_token, use_context=True)
+    dispatcher = updater.dispatcher
 
-# Start the bot
-updater.start_polling()
+    # Create handler for start command
+    start_handler = CommandHandler('start', start)
+    dispatcher.add_handler(start_handler)
 
-# Run the bot until you press Ctrl-C or the process receives SIGINT
-updater.idle()
+    veg_handler = CommandHandler('veg', veg)
+    dispatcher.add_handler(veg_handler)
+
+    nonveg_handler = CommandHandler('nonveg', nonveg)
+    dispatcher.add_handler(nonveg_handler)
+
+    random_handler = CommandHandler('random', random)
+    dispatcher.add_handler(random_handler)
+
+    echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
+    dispatcher.add_handler(echo_handler)
+
+    unknown_handler = MessageHandler(Filters.command, unknown)
+    dispatcher.add_handler(unknown_handler)
+
+    # Start the bot
+    # updater.start_polling()
+    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=config.telegram_token)
+    updater.bot.setWebhook('https://glacial-waters-08425.herokuapp.com/' + config.telegram_token)
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT
+    updater.idle()
+
+
+if __name__ == "__main__":
+    main()
