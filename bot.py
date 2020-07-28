@@ -47,7 +47,7 @@ def create_output(response):
 
 # Function to fetch random recipe from api
 def get_random_recipe():
-    response = requests.get(f"https://api.spoonacular.com/recipes/random?apiKey={config.api_key}").text
+    response = requests.get(f"https://api.spoonacular.com/recipes/random?apiKey={os.environ.get('API_KEY')}").text
     response = json.loads(response)
     recipe_info = create_output(response)
     return recipe_info
@@ -56,7 +56,7 @@ def get_random_recipe():
 # Function to fetch random veg recipe from api
 def get_veg_recipe():
     response = requests.get(
-        f"https://api.spoonacular.com/recipes/random?number=1&tags=vegetarian&apiKey={config.api_key}").text
+        f"https://api.spoonacular.com/recipes/random?number=1&tags=vegetarian&apiKey={os.environ.get('API_KEY')}").text
     response = json.loads(response)
     recipe_info = create_output(response)
     return recipe_info
@@ -65,7 +65,7 @@ def get_veg_recipe():
 # Function to fetch random non-veg recipe from api
 def get_nonveg_recipe():
     response = requests.get(
-        f"https://api.spoonacular.com/recipes/random?number=1&tags=primal&apiKey={config.api_key}").text
+        f"https://api.spoonacular.com/recipes/random?number=1&tags=primal&apiKey={os.environ.get('API_KEY')}").text
     response = json.loads(response)
     recipe_info = create_output(response)
     return recipe_info
@@ -114,7 +114,7 @@ def unknown(update, context):
 def main():
     """Start the bot"""
     # Initialize the Updater to listen for commands/messages received
-    updater = Updater(token=config.telegram_token, use_context=True)
+    updater = Updater(token=os.environ.get('TELEGRAM_TOKEN'), use_context=True)
     dispatcher = updater.dispatcher
 
     # Create handler for start command
@@ -138,8 +138,8 @@ def main():
 
     # Start the bot
     # updater.start_polling()
-    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=config.telegram_token)
-    updater.bot.setWebhook('https://glacial-waters-08425.herokuapp.com/' + config.telegram_token)
+    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=os.environ.get('TELEGRAM_TOKEN'))
+    updater.bot.setWebhook('https://glacial-waters-08425.herokuapp.com/' + os.environ.get('TELEGRAM_TOKEN'))
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT
     updater.idle()
