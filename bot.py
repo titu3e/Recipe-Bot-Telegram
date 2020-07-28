@@ -43,7 +43,7 @@ def create_output(response):
 def start(update, context):
     context.bot.send_photo(chat_id=update.effective_chat.id,
                            photo="https://i.pinimg.com/236x/78/a1/97/78a19719c209a8e4cad29e6f7ee1e2a5--minimal.jpg",
-                           caption="I'm a *bot*, please talk to me\!\n*Commands:*\n1\.random \- Gives you a random "
+                           caption="*Do you want a recipe today\?*\n*Commands:*\n1\.random \- Gives you a random "
                                    "recipe\n2\.veg \- Gives you random veg recipe\n3\.nonveg \- Gives you random "
                                    "non\-veg recipe", parse_mode="MarkdownV2")
 
