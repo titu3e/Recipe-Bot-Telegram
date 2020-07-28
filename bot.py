@@ -6,7 +6,7 @@ Author: tanmayc07
 """
 
 import os
-import config
+# import config
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from bs4 import BeautifulSoup
 import logging
