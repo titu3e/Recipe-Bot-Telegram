@@ -114,7 +114,7 @@ def unknown(update, context):
 def main():
     """Start the bot"""
     # Initialize the Updater to listen for commands/messages received
-    updater = Updater(token=os.environ.get('TELEGRAM_TOKEN'), use_context=True)
+    updater = Updater(token=os.environ.get('5016713832:AAFanQaM9w7R6H0KvCW8LoxDTK5-yu1ui9E'), use_context=True)
     dispatcher = updater.dispatcher
 
     # Create handler for start command
@@ -138,8 +138,8 @@ def main():
 
     # Start the bot
     # updater.start_polling()
-    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=os.environ.get('TELEGRAM_TOKEN'))
-    updater.bot.setWebhook('https://glacial-waters-08425.herokuapp.com/' + os.environ.get('TELEGRAM_TOKEN'))
+    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=os.environ.get('5016713832:AAFanQaM9w7R6H0KvCW8LoxDTK5-yu1ui9E'))
+    updater.bot.setWebhook('https://glacial-waters-08425.herokuapp.com/' + os.environ.get('5016713832:AAFanQaM9w7R6H0KvCW8LoxDTK5-yu1ui9E'))
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT
     updater.idle()
